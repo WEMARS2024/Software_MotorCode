@@ -2,7 +2,13 @@ import asyncio
 import websockets
 import serial
 import time
+import os
+marker_file_path = '/home/wemars/firstRun'
 
+if not os.path.exists(marker_file_path):
+    with open(marker_file_path,'w') as marker_file:
+        marker_file.write('this prevents pi from repeated reboot')
+    os.system('sudo reboot')
 class Serial_Wrapper:
     def __init__(self, device='/dev/ttyUSB0', baud=921600):
         self.ser = serial.Serial(device, baud)
@@ -20,18 +26,18 @@ class Serial_Wrapper:
         self.ser.flushOutput()
 
 def gradualIncrease(current_value, target_value, step=0.01, delay=0.05):
-    while current_value < target_value:
+    if current_value < target_value:
         current_value += step
-        if current_value > target_value:
-            current_value = target_value
-        yield current_value
-        time.sleep(delay)
-    while current_value > target_value:
-        current_value -= step
-        if current_value < target_value:
-            current_value = target_value
-        yield current_value
 
+        yield current_value
+        
+    if current_value > target_value:
+        current_value -= step
+        yield current_value
+    if -0.1<= target_value<=0.1:
+        current_value = 0
+        yield current_value
+   
 def format_joystick_data(axis_label, value):
     direction = '+' if value >= 0 else '-'
     formatted_value = f"{-abs(value):.2f}" if value < 0 else f"{abs(value):.2f}"
