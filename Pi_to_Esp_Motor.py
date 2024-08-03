@@ -33,7 +33,10 @@ def gradualIncrease(current_value, target_value, step=0.01):
    
 
 def format_joystick_data(axis_label, input):
-    formatted_value = f"{-abs(input):.2f}" if input < 0 else f"{abs(input):.2f}"
+    if axis_label == "ML":
+        formatted_value = f"{-abs(input):.2f}" if input > 0 else f"{abs(input):.2f}" # Invert left side inputs
+    else:
+        formatted_value = f"{-abs(input):.2f}" if input < 0 else f"{abs(input):.2f}"
     return f"({axis_label}, {formatted_value})"
 
 
