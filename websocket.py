@@ -34,9 +34,11 @@ def gradualIncrease(current_value, target_value, step=0.01, delay=0.05):
         current_value = 0
         yield current_value
    
-def format_joystick_data(axis_label, value):
-    direction = '+' if value >= 0 else '-'
-    formatted_value = f"{-abs(value):.2f}" if value < 0 else f"{abs(value):.2f}"
+def format_joystick_data(axis_label, input):
+    if axis_label == "ML":
+        formatted_value = f"{-abs(input):.2f}" if input > 0 else f"{abs(input):.2f}"
+    else:
+        formatted_value = f"{-abs(input):.2f}" if input < 0 else f"{abs(input):.2f}"   
     return f"({axis_label},{formatted_value})"
 
 async def receive_data():
