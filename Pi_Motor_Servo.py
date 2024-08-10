@@ -4,7 +4,7 @@ import serial
 import time
 
 class Serial_Wrapper:
-    def __init__(self, device='/dev/serial0', baud=115200):
+    def __init__(self, device='/dev/ttyUSB0', baud=921600):
         self.ser = serial.Serial(device, baud)
         self.ser.flush()  # Flush the serial buffer
 
@@ -25,14 +25,13 @@ class Serial_Wrapper:
 def gradualIncrease(current_value, target_value, step=0.01, delay=0.05):
     if current_value < target_value:
         current_value += step
-
         yield current_value
         
     if current_value > target_value:
         current_value -= step
         yield current_value
         
-    if -0.1<= target_value<=0.1:
+    if -0.1 <= target_value <= 0.1:
         current_value = 0
         yield current_value
 
@@ -50,7 +49,7 @@ def format_servo_data(input):
 
 async def receive_data():
     uri = 'ws://172.20.10.9:5678'  # Replace with the server's IP address
-    serial_wrapper = Serial_Wrapper(device='/dev/serial0', baud=115200)
+    serial_wrapper = Serial_Wrapper(device='/dev/ttyUSB0', baud=921600)
     
     # Define labels for servo and motor control
     servo_label = [b'X']
@@ -58,7 +57,7 @@ async def receive_data():
     current_values = [0, 0]
 
     control_mode = 'motor'  # Initial control mode
-    toggle = 0
+    toggle = False
 
     try:
         async with websockets.connect(uri, timeout=20) as websocket:
@@ -72,23 +71,21 @@ async def receive_data():
 
                     # Check for Y button press to toggle control mode
                     if parsed_data[6] == 1:
-                        toggle = 1
-                    if toggle == 1 and parsed_data[6] == 0:
-                        toggle = 0
+                        toggle = True
+                    elif toggle and parsed_data[6] == 0:
+                        toggle = False
                         control_mode = 'motor' if control_mode == 'servo' else 'servo'
                         print(f"Toggled control mode to {control_mode}")
 
                     # Servo control
                     if control_mode == 'servo':
-
                         # Create the list with 'X' and the formatted inputs
-                        formatted_data_list = servo_label + [format_servo_data(value) 
-                                                             for value in parsed_data]
+                        formatted_data_list = servo_label + [format_servo_data(value) for value in parsed_data]
 
                         # Convert the list to bytes
                         formatted_data_bytes = b''.join(formatted_data_list) + b'\n'
                         print(formatted_data_bytes)
-                        serial_wrapper.send_data(formatted_data) 
+                        serial_wrapper.send_data(formatted_data_bytes) 
 
                     # Motor control
                     else:  
