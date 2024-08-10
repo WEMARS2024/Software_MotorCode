@@ -44,8 +44,8 @@ class XboxController(object):
         RY = self.RightJoystickY
         LT = self.LeftTrigger
         RT = self.RightTrigger
-        Y = self.Y
-        return [RY, LY, RX, LX, RT, LT, Y]
+        RB = self.RightBumper
+        return [RY, LY, RX, LX, RT, LT, RB]
 
     def _monitor_controller(self):
         while True:
@@ -54,17 +54,17 @@ class XboxController(object):
             # ABS = absolute, BTN = key
             for event in events:    # loop through each event to process them
                 if event.code == 'ABS_Y':
-                    self.LeftJoystickY = (event.state / XboxController.MAX_JOY_VAL) * 100 # normalize between -1 and 1
+                    self.LeftJoystickY = (event.state / XboxController.MAX_JOY_VAL)  # normalize between -1 and 1
                 elif event.code == 'ABS_X':
-                    self.LeftJoystickX = (event.state / XboxController.MAX_JOY_VAL) * 100 # normalize between -1 and 1
+                    self.LeftJoystickX = (event.state / XboxController.MAX_JOY_VAL)  # normalize between -1 and 1
                 elif event.code == 'ABS_RY':
-                    self.RightJoystickY = (event.state / XboxController.MAX_JOY_VAL) * 100 # normalize between -1 and 1
+                    self.RightJoystickY = (event.state / XboxController.MAX_JOY_VAL)  # normalize between -1 and 1
                 elif event.code == 'ABS_RX':
-                    self.RightJoystickX = (event.state / XboxController.MAX_JOY_VAL) *100 # normalize between -1 and 1
+                    self.RightJoystickX = (event.state / XboxController.MAX_JOY_VAL)  # normalize between -1 and 1
                 elif event.code == 'ABS_Z':
-                    self.LeftTrigger = (event.state / XboxController.MAX_TRIG_VAL) * 100 # normalize between 0 and 1
+                    self.LeftTrigger = (event.state / XboxController.MAX_TRIG_VAL)  # normalize between 0 and 1
                 elif event.code == 'ABS_RZ':
-                    self.RightTrigger = (event.state / XboxController.MAX_TRIG_VAL) *100 # normalize between 0 and 1
+                    self.RightTrigger = (event.state / XboxController.MAX_TRIG_VAL)  # normalize between 0 and 1
                 elif event.code == 'BTN_TL':
                     self.LeftBumper = event.state
                 elif event.code == 'BTN_TR':

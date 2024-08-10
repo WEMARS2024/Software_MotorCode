@@ -22,7 +22,7 @@ class Serial_Wrapper:
         self.ser.flushOutput()
 
 
-def gradualIncrease(current_value, target_value, step=10, delay=0.05):
+def gradualIncrease(current_value, target_value, step=0.01, delay=0.05):
     if current_value < target_value:
         current_value += step
 
@@ -38,9 +38,9 @@ def gradualIncrease(current_value, target_value, step=10, delay=0.05):
 
 def format_motor_data(axis_label, input):
     if axis_label == "ML":
-        formatted_value = f"{-abs(input):.2f}" if input < 0 else f"{abs(input):.2f}"
+        formatted_value = f"{-abs(input):.2f}" if input > 0 else f"{abs(input):.2f}"
     else:
-        formatted_value = f"{-abs(input):.2f}" if input > 0 else f"{abs(input):.2f}"   
+        formatted_value = f"{-abs(input):.2f}" if input < 0 else f"{abs(input):.2f}"   
     return f"({axis_label},{formatted_value})"
 
 
@@ -54,7 +54,7 @@ async def receive_data():
     
     # Define labels for servo and motor control
     servo_label = [b'X']
-    motor_labels = ["MR", "ML"]
+    motor_labels = ["ML", "MR"]
     current_values = [0, 0]
 
     control_mode = 'motor'  # Initial control mode
