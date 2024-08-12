@@ -75,9 +75,11 @@ async def receive_data():
         async with websockets.connect(uri, timeout=20) as websocket:
             while True:
                 try:
-                    data = await websocket.recv()
+                    data = await asyncio.wait_for(websocket.recv(), timeout=5)  # wait for data with 5 sec timer
+                    if not data:
+                        print("no data, stopping now")
+                        break
                     print(f"Received data: {data}")
-                    
                     parsed_data = eval(data)
                     print(parsed_data)
 
@@ -112,7 +114,9 @@ async def receive_data():
                                 print(f"Formatted {label} value: {formatted_data}")
                                 serial_wrapper.send_data(formatted_data,control_mode)
                                 current_values[i] = new_value
-                    
+                except asyncio.TimeoutError:
+                    print("Timeout waiting for data, stopping.") # for far future add reconnect feature/ search for connection with moving radio
+                    break    
                 except websockets.exceptions.ConnectionClosed as e:
                     print(f"WebSocket connection closed: {e}")
                     break
