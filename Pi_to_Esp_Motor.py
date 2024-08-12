@@ -105,7 +105,7 @@ async def receive_data():
                     else:  
                         for i in range(len(motor_labels)):
                             label = motor_labels[i]
-                            input = parsed_data[i]
+                            input = 0.0001*pow(parsed_data[i],3) #figure out what value the input is, i think its from -100 to 100, if not change the multiplyer function to match
                             for new_value in gradualIncrease(current_values[i], input):
                                 formatted_data = format_motor_data(label, new_value).encode() + b'\n'
                                 print(f"Formatted {label} value: {formatted_data}")
