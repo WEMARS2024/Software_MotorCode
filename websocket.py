@@ -2,6 +2,7 @@ import asyncio
 import websockets
 import serial
 import time
+import os
 
 class Serial_Wrapper:
     def __init__(self, device='/dev/ttyUSB0', baud=921600):
@@ -20,25 +21,29 @@ class Serial_Wrapper:
         self.ser.flushOutput()
 
 def gradualIncrease(current_value, target_value, step=0.01, delay=0.05):
-    while current_value < target_value:
+    if current_value < target_value:
         current_value += step
-        if current_value > target_value:
-            current_value = target_value
-        yield current_value
-        time.sleep(delay)
-    while current_value > target_value:
-        current_value -= step
-        if current_value < target_value:
-            current_value = target_value
-        yield current_value
 
-def format_joystick_data(axis_label, value):
-    direction = '+' if value >= 0 else '-'
-    formatted_value = f"{-abs(value):.2f}" if value < 0 else f"{abs(value):.2f}"
-    return f"(ML,{formatted_value})"
+        yield current_value
+        
+    if current_value > target_value:
+        current_value -= step
+        yield current_value
+        
+    if -0.1<= target_value<=0.1:
+        current_value = 0
+        yield current_value
+   
+def format_joystick_data(axis_label, input):
+    if axis_label == "ML":
+        formatted_value = f"{-abs(input):.2f}" if input > 0 else f"{abs(input):.2f}"
+    else:
+        formatted_value = f"{-abs(input):.2f}" if input < 0 else f"{abs(input):.2f}"   
+    return f"({axis_label},{formatted_value})"
 
 async def receive_data():
-    current_LX = 0
+    labels = ["ML", "MR"]
+    current_values = [0, 0]
     uri = "ws://192.168.1.15:5678"  # Replace with the server's IP address
     serial_wrapper = Serial_Wrapper(device='/dev/ttyUSB0', baud=921600)
     async with websockets.connect(uri) as websocket:
@@ -47,14 +52,14 @@ async def receive_data():
             print(f"Received data: {data}")
             parsed_data = eval(data)
             print(parsed_data)
-            target_LX = parsed_data[2]
+            for i in range(len(labels)):
+                label2 = labels[i]
+                inputval = parsed_data[i]
 
-            print(f"Target LX value: {target_LX}")
-
-            for new_LX in gradualIncrease(current_LX, target_LX):
-                formatted_LX = format_joystick_data('ML', new_LX).encode()
-                print(f"Formatted LX value: {formatted_LX}")
-                serial_wrapper.send_data(formatted_LX)
-                current_LX = new_LX  # Update the current_LX to the new value
+                for new_value in gradualIncrease(current_values[i], inputval):
+                    formatted_data = format_joystick_data(label2, new_value).encode() + b'\n'
+                    print(f"Formatted {label2} value: {formatted_data}")
+                    serial_wrapper.send_data(formatted_data)
+                    current_values[i] = new_value
 
 asyncio.get_event_loop().run_until_complete(receive_data())
