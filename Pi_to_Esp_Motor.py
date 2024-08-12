@@ -116,10 +116,20 @@ async def receive_data():
                                 current_values[i] = new_value
                 except asyncio.TimeoutError:
                     print("Timeout waiting for data, stopping.") # for far future add reconnect feature/ search for connection with moving radio
+                    for i in range(len(motor_labels)):
+                            label = motor_labels[i]
+                            formatted_data = format_motor_data(label, 0.00).encode() + b'\n' # set motor speeds to 0
+                            serial_wrapper.send_data(formatted_data,'motor')
+                    for i in range (len(servo_label)):
+                            label=servo_label[i]
+                            formatted_data = format_servo_data(label,0.00).encode()+ b'\n'
+                            serial_wrapper.send_data(formatted_data, 'servo')
                     break    
+                    
                 except websockets.exceptions.ConnectionClosed as e:
                     print(f"WebSocket connection closed: {e}")
                     break
+                    
                 except Exception as e:
                     print(f"Error processing data: {e}")
     except Exception as e:
