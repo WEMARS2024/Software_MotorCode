@@ -93,7 +93,8 @@ async def receive_data():
                     if control_mode == 'servo':
                         for i in range (len(servo_label)):
                             label=servo_label[i]
-                            input= parsed_data[i]
+                            input= 0.0001*pow(parsed_data[i],3) #if arm needs to be even more precise/slow/easier to move
+                            #input = parsed_data[i]
                             
                         # Create the list with 'X' and the formatted input
                             formatted_data = format_servo_data(label,input).encode()+ b'\n'
@@ -105,7 +106,7 @@ async def receive_data():
                     else:  
                         for i in range(len(motor_labels)):
                             label = motor_labels[i]
-                            input = 0.0001*pow(parsed_data[i],3) #figure out what value the input is, i think its from -100 to 100, if not change the multiplyer function to match
+                            input = 0.0001*pow(parsed_data[i],3) #figure out what value the input is, i think its from -100 to 100, if not change the multiplyer function to match, if its a float 0.00-1.00 then function is just x cubed (no multiply)
                             for new_value in gradualIncrease(current_values[i], input):
                                 formatted_data = format_motor_data(label, new_value).encode() + b'\n'
                                 print(f"Formatted {label} value: {formatted_data}")
